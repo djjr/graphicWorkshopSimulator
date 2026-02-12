@@ -15,6 +15,7 @@ const activityInfo = document.getElementById("activity-info");
 const advanceActivityBtn = document.getElementById("advance-activity-btn");
 const advancePhaseBtn = document.getElementById("advance-phase-btn");
 const exportBtn = document.getElementById("export-btn");
+const modelSelect = document.getElementById("model-select");
 
 let state = {
   workshop: null,
@@ -344,8 +345,31 @@ workshopSelect.addEventListener("change", () => {
   }
 });
 
+async function loadModels() {
+  const res = await fetch("/api/models");
+  const { models, active } = await res.json();
+  modelSelect.innerHTML = "";
+  for (const m of models) {
+    const opt = document.createElement("option");
+    opt.value = m.id;
+    opt.textContent = m.available ? m.label : `${m.label} (no key)`;
+    opt.disabled = !m.available;
+    if (m.id === active.id) opt.selected = true;
+    modelSelect.appendChild(opt);
+  }
+}
+
+modelSelect.addEventListener("change", async () => {
+  await fetch("/api/model", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ modelId: modelSelect.value }),
+  });
+});
+
 // --- Init ---
 (async () => {
   await loadWorkshopState();
   await loadWorkshopList();
+  await loadModels();
 })();

@@ -5,7 +5,7 @@ import { fileURLToPath } from "url";
 import { readdirSync } from "fs";
 
 import { Session } from "./src/session.mjs";
-import { chatCompletion } from "./src/llm.mjs";
+import { chatCompletion, MODEL_OPTIONS, getActiveModel, setModel } from "./src/llm.mjs";
 import { buildMessages } from "./src/prompts.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -29,6 +29,29 @@ console.log(`Loaded workshop: ${session.getWorkshop().title}`);
 
 app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
+});
+
+// Model selection
+app.get("/api/models", (_req, res) => {
+  const available = {
+    openai: !!process.env.OPENAI_API_KEY,
+    anthropic: !!process.env.ANTHROPIC_API_KEY,
+  };
+  const models = MODEL_OPTIONS.map((m) => ({
+    ...m,
+    available: available[m.provider],
+  }));
+  res.json({ models, active: getActiveModel() });
+});
+
+app.post("/api/model", (req, res) => {
+  const { modelId } = req.body;
+  const result = setModel(modelId);
+  if (!result) {
+    return res.status(400).json({ error: "Unknown model", available: MODEL_OPTIONS });
+  }
+  console.log(`Model switched to: ${result.label} (${result.id})`);
+  res.json({ active: result });
 });
 
 // Return current session state

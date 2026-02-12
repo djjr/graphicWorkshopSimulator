@@ -3,6 +3,7 @@ wiki/
 *.log
 .env
 .env.*
+!.env.sample
 node_modules/
 dist/
 build/
