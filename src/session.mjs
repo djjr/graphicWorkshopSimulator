@@ -87,17 +87,7 @@ export class Session {
     if (next >= phase.activities.length) return null;
 
     this.currentActivityIndex = next;
-    const activity = phase.activities[next];
-
-    if (activity.facilitator_says) {
-      this.dialogue.push({
-        speaker: this.workshop.facilitator.name,
-        text: activity.facilitator_says,
-        type: "facilitator",
-      });
-    }
-
-    return activity;
+    return phase.activities[next];
   }
 
   addDialogue(entry) {

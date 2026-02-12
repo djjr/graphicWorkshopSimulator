@@ -6,7 +6,7 @@ import { readdirSync } from "fs";
 
 import { Session } from "./src/session.mjs";
 import { chatCompletion, MODEL_OPTIONS, getActiveModel, setModel } from "./src/llm.mjs";
-import { buildMessages } from "./src/prompts.mjs";
+import { buildMessages, buildTransitionMessages } from "./src/prompts.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -189,23 +189,51 @@ app.post("/api/clear-directives", (_req, res) => {
 });
 
 // Advance to next activity within current phase
-app.post("/api/advance-activity", (_req, res) => {
-  const activity = session.advanceActivity();
-  if (!activity) {
-    return res.json({
-      advanced: false,
-      message: "No more activities in this phase.",
+app.post("/api/advance-activity", async (req, res) => {
+  try {
+    const activity = session.advanceActivity();
+    if (!activity) {
+      return res.json({
+        advanced: false,
+        message: "No more activities in this phase.",
+        currentActivityIndex: session.getState().currentActivityIndex,
+        currentActivity: null,
+        dialogue: session.getDialogue(),
+      });
+    }
+
+    // Generate LLM transition instead of using canned text
+    const messages = buildTransitionMessages(session, activity);
+    const rawContent = await chatCompletion(messages, {
+      temperature: 0.7,
+      maxTokens: 300,
+      json: true,
+    });
+
+    let transitionText = activity.facilitator_says; // fallback
+    try {
+      const parsed = JSON.parse(rawContent);
+      if (parsed.transition) transitionText = parsed.transition;
+    } catch (e) {
+      console.error("Transition JSON parse error, using fallback:", e);
+    }
+
+    session.addDialogue({
+      speaker: session.getWorkshop().facilitator.name,
+      text: transitionText,
+      type: "facilitator",
+    });
+
+    res.json({
+      advanced: true,
+      currentActivity: activity,
       currentActivityIndex: session.getState().currentActivityIndex,
-      currentActivity: null,
       dialogue: session.getDialogue(),
     });
+  } catch (err) {
+    console.error("Error in /api/advance-activity:", err);
+    res.status(500).json({ error: "Internal server error" });
   }
-  res.json({
-    advanced: true,
-    currentActivity: activity,
-    currentActivityIndex: session.getState().currentActivityIndex,
-    dialogue: session.getDialogue(),
-  });
 });
 
 // Force phase advance

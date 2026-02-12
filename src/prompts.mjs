@@ -1,3 +1,43 @@
+export function buildTransitionMessages(session, activity) {
+  const workshop = session.getWorkshop();
+  const facilitator = workshop.facilitator;
+  const recentDialogue = session.getRecentDialogue(20);
+
+  const transcript = recentDialogue
+    .filter((d) => d.type !== "directive")
+    .map((d) => `${d.speaker}: ${d.text}`)
+    .join("\n");
+
+  let activityDescription = "";
+  if (activity.type === "prompt") {
+    activityDescription = `The next activity is a discussion prompt with this focus: "${activity.goal}"`;
+  } else if (activity.type === "madlib") {
+    activityDescription = `The next activity is a structured fill-in exercise. Template: "${activity.template}" with blanks: ${activity.blanks.map((b) => `"${b}"`).join(", ")}`;
+  }
+
+  const system = `You are ${facilitator.name}, a workshop facilitator. Personality: ${facilitator.personality}. Speech style: ${facilitator.speech_style}.
+
+You need to transition the group to the next activity. Write a single short facilitator statement (1-3 sentences) that:
+1. Briefly acknowledges or summarizes what the group just discussed (if there's prior dialogue)
+2. Naturally introduces the next activity
+
+Guidance for what to introduce (paraphrase naturally, don't read it verbatim): "${activity.facilitator_says}"
+
+Output valid JSON: {"transition": "Your facilitator statement here"}`;
+
+  const user = `RECENT DIALOGUE:
+${transcript || "(conversation just started)"}
+
+${activityDescription}
+
+Write the facilitator's transition statement.`;
+
+  return [
+    { role: "system", content: system },
+    { role: "user", content: user },
+  ];
+}
+
 export function buildMessages(session, { maxNewTurns = 3 } = {}) {
   const workshop = session.getWorkshop();
   const phase = session.getCurrentPhase();
