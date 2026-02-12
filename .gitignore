@@ -1,0 +1,12 @@
+wiki/
+.DS_Store
+*.log
+.env
+.env.*
+node_modules/
+dist/
+build/
+.parcel-cache/
+.vite/
+.next/
+coverage/

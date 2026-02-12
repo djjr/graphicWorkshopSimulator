@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>AI Safety Workshop - Text UI</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #111;
+      color: #eee;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    header {
+      padding: 0.75rem 1rem;
+      background: #222;
+      border-bottom: 1px solid #333;
+      font-weight: 600;
+    }
+
+    #phase {
+      font-size: 0.9rem;
+      color: #aaa;
+    }
+
+    #log {
+      flex: 1;
+      padding: 1rem;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      line-height: 1.5;
+    }
+
+    .line {
+      margin-bottom: 0.4rem;
+    }
+
+    .speaker {
+      font-weight: 600;
+      color: #8fd3ff;
+    }
+
+    .facilitator .speaker {
+      color: #ffd27f;
+    }
+
+    .meta {
+      font-size: 0.75rem;
+      color: #888;
+      margin-left: 0.25rem;
+    }
+
+    footer {
+      padding: 0.75rem 1rem;
+      background: #181818;
+      border-top: 1px solid #333;
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    #player-input {
+      flex: 1;
+      padding: 0.4rem 0.6rem;
+      background: #111;
+      border: 1px solid #333;
+      border-radius: 4px;
+      color: #eee;
+    }
+
+    button {
+      padding: 0.4rem 0.75rem;
+      background: #2d7aff;
+      border: none;
+      border-radius: 4px;
+      color: white;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>AI Safety Workshop (Text Prototype)</div>
+    <div id="phase"></div>
+      <div id="phase-controls">
+        <button data-phase-id="intro">Intro</button>
+        <button data-phase-id="risk_brainstorm">Brainstorm Risks</button>
+        <button data-phase-id="alignment_debate">Alignment Debate</button>
+      </div>
+  </header>
+
+  <main id="log"></main>
+
+  <footer>
+    <input
+      id="player-input"
+      type="text"
+      placeholder="Optional: say something as the player character…"
+    />
+    <button id="next-btn">Next turn</button>
+  </footer>
+
+  <script>
+    // --- Hard-coded session state for now ---
+
+    const state = {
+      phaseId: "risk_brainstorm",
+      // The name of the reader-controlled character (optional)
+      playerCharacterName: "You",
+      characters: [
+        {
+          name: "Dr. Elena Park",
+          role: "Facilitator",
+          ai_safety_orientation: "moderate, process-focused",
+          personality: "patient, curious, keeps things on track",
+          speech_style: "clear, concise, uses reflective questions"
+        },
+        {
+          name: "Maya",
+          role: "Participant",
+          ai_safety_orientation: "cautious, systemic risk-focused",
+          personality: "intense, idealistic",
+          speech_style: "vivid, uses concrete examples"
+        },
+        {
+          name: "Jamal",
+          role: "Participant",
+          ai_safety_orientation: "skeptical of hype, focus on social impacts",
+          personality: "dry humor, reflective",
+          speech_style: "measured, occasionally sardonic"
+        }
+      ],
+      // Transcript: { speaker, text }
+      dialogue: [
+        {
+          speaker: "Facilitator",
+          text: "Welcome everyone. Let's explore some of the risks of advanced AI together."
+        }
+      ]
+    };
+
+    const logEl = document.getElementById("log");
+    const phaseEl = document.getElementById("phase");
+    const nextBtn = document.getElementById("next-btn");
+    const playerInput = document.getElementById("player-input");
+
+    // Simple phase label
+    function updatePhaseLabel() {
+      const phaseLabels = {
+        intro: "Intro & framing",
+        risk_brainstorm: "Phase: Brainstorm AI risks",
+        alignment_debate: "Phase: Debate alignment strategies"
+      };
+      phaseEl.textContent = phaseLabels[state.phaseId] || `Phase: ${state.phaseId}`;
+    }
+
+    function renderLog() {
+      logEl.innerHTML = "";
+      state.dialogue.forEach((d) => {
+        const div = document.createElement("div");
+        div.className = "line";
+        const isFacilitator = d.speaker.toLowerCase().includes("facilitator") ||
+                              d.speaker.toLowerCase().includes("elena");
+        if (isFacilitator) div.classList.add("facilitator");
+
+        const speakerSpan = document.createElement("span");
+        speakerSpan.className = "speaker";
+        speakerSpan.textContent = `${d.speaker}: `;
+
+        const textSpan = document.createElement("span");
+        textSpan.textContent = d.text;
+
+        div.appendChild(speakerSpan);
+        div.appendChild(textSpan);
+
+        if (d.meta) {
+          const metaSpan = document.createElement("span");
+          metaSpan.className = "meta";
+          metaSpan.textContent = `(${d.meta})`;
+          div.appendChild(metaSpan);
+        }
+
+        logEl.appendChild(div);
+      });
+
+      // Scroll to bottom
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    const phaseControls = document.getElementById("phase-controls");
+
+    function updatePhaseLabel() {
+      const phaseLabels = {
+        intro:            "Phase: Intro & framing",
+        risk_brainstorm:  "Phase: Brainstorm AI risks",
+        alignment_debate: "Phase: Debate alignment strategies"
+      };
+      phaseEl.textContent = phaseLabels[state.phaseId] || `Phase: ${state.phaseId}`;
+    }
+
+    // Handle phase button clicks
+    phaseControls.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-phase-id]");
+      if (!btn) return;
+
+      const newPhaseId = btn.dataset.phaseId;
+      state.phaseId = newPhaseId;
+      updatePhaseLabel();
+
+      // Optional: add a facilitator transition line into the dialogue
+      state.dialogue.push({
+        speaker: "Facilitator",
+        text: `Okay, let's move into the next phase: ${btn.textContent}.`
+      });
+
+      renderLog();
+    });
+
+
+
+    async function fetchNextTurn() {
+      nextBtn.disabled = true;
+
+      // If the player typed something, add it as a line from the player character
+      const playerText = playerInput.value.trim();
+      if (playerText) {
+        state.dialogue.push({
+          speaker: state.playerCharacterName,
+          text: playerText
+        });
+        playerInput.value = "";
+      }
+
+      renderLog();
+
+      try {
+        const response = await fetch("/api/next-turn", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            phaseId: state.phaseId,
+            characters: state.characters,
+            recentDialogue: state.dialogue,
+            playerCharacterName: state.playerCharacterName,
+            maxNewBubbles: 3
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          console.error("API error:", data);
+          alert("Error getting next turn. See console.");
+          return;
+        }
+
+        // data.turns: [{ speaker, utterance, emotion, action }]
+        (data.turns || []).forEach((t) => {
+          const metaParts = [];
+          if (t.emotion) metaParts.push(t.emotion);
+          if (t.action) metaParts.push(t.action);
+          state.dialogue.push({
+            speaker: t.speaker,
+            text: t.utterance,
+            meta: metaParts.join(" · ")
+          });
+        });
+
+        renderLog();
+      } catch (err) {
+        console.error(err);
+        alert("Network error. See console.");
+      } finally {
+        nextBtn.disabled = false;
+        playerInput.focus();
+      }
+    }
+
+    nextBtn.addEventListener("click", fetchNextTurn);
+
+    // Allow Enter to send if input is focused + Shift+Enter for newline (if you want)
+    playerInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        fetchNextTurn();
+      }
+    });
+
+    // Initial render
+    updatePhaseLabel();
+    renderLog();
+  </script>
+</body>
+</html>
