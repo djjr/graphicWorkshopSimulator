@@ -1,175 +1,106 @@
 import express from "express";
-import OpenAI from "openai";
 import dotenv from "dotenv";
-
 import path from "path";
 import { fileURLToPath } from "url";
+import { readdirSync } from "fs";
+
+import { Session } from "./src/session.mjs";
+import { chatCompletion } from "./src/llm.mjs";
+import { buildMessages } from "./src/prompts.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 dotenv.config();
 
 const app = express();
-// Serve static files from a "public" folder
 app.use(express.static(path.join(__dirname, "public")));
-
-
-
 app.use(express.json());
 
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// --- Single session (no multi-user for now) ---
+const session = new Session();
 
-// --- Example static data for your POC: workshop + characters ---
+// Load default workshop on startup
+const defaultWorkshop =
+  process.env.WORKSHOP || path.join(__dirname, "workshops", "ai-safety.json");
+session.loadWorkshop(defaultWorkshop);
+console.log(`Loaded workshop: ${session.getWorkshop().title}`);
 
-// You can move these into separate files later:
-const WORKSHOP_PLAN = [
-  {
-    id: "intro",
-    title: "Welcome and framing",
-    goal: "Set norms, explain purpose, and surface expectations.",
-  },
-  {
-    id: "risk_brainstorm",
-    title: "Brainstorm AI risks",
-    goal: "Generate a diverse list of AI risks without judging them yet.",
-  },
-  {
-    id: "alignment_debate",
-    title: "Debate alignment strategies",
-    goal: "Contrast different approaches to AI alignment and safety.",
-  },
-];
+// --- Routes ---
 
-// Simple health check
-app.get("/health", (req, res) => {
+app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });
 
-/**
- * POST /api/next-turn
- *
- * Expects JSON body like:
- * {
- *   "phaseId": "risk_brainstorm",
- *   "characters": [...],
- *   "recentDialogue": [...],
- *   "playerCharacterName": "You", // or null
- *   "maxNewBubbles": 3
- * }
- */
+// Return current session state
+app.get("/api/workshop", (_req, res) => {
+  res.json(session.getState());
+});
+
+// List available workshop configs
+app.get("/api/workshops", (_req, res) => {
+  const dir = path.join(__dirname, "workshops");
+  const files = readdirSync(dir).filter((f) => f.endsWith(".json"));
+  res.json({ workshops: files });
+});
+
+// Load a different workshop
+app.post("/api/load-workshop", (req, res) => {
+  const { filename } = req.body;
+  if (!filename) return res.status(400).json({ error: "filename required" });
+
+  const configPath = path.join(__dirname, "workshops", path.basename(filename));
+  try {
+    session.loadWorkshop(configPath);
+    res.json(session.getState());
+  } catch (err) {
+    console.error("Failed to load workshop:", err);
+    res.status(400).json({ error: "Failed to load workshop config" });
+  }
+});
+
+// Generate next dialogue turns
 app.post("/api/next-turn", async (req, res) => {
   try {
-    const {
-      phaseId,
-      characters,
-      recentDialogue,
-      playerCharacterName,
-      maxNewBubbles = 3,
-    } = req.body;
+    const { playerText, facilitatorText, maxNewTurns = 3 } = req.body;
 
-    const phase =
-      WORKSHOP_PLAN.find((p) => p.id === phaseId) ?? WORKSHOP_PLAN[0];
-
-    // 1. Describe the characters
-    const characterDescriptions = (characters || [])
-      .map((c) => {
-        return `- ${c.name} (${c.role}): AI safety orientation: ${
-          c.ai_safety_orientation || "n/a"
-        }; personality: ${c.personality || "n/a"}; speech style: ${
-          c.speech_style || "n/a"
-        }.`;
-      })
-      .join("\n");
-
-    // 2. Turn recent dialogue into a transcript
-    const transcript = (recentDialogue || [])
-      .map((d) => `${d.speaker}: ${d.text}`)
-      .join("\n");
-
-    // 3. Build prompts
-    const systemPrompt = `
-You are simulating a live AI safety workshop as a graphic novel script.
-
-Rules:
-- The scene features a facilitator and several participants.
-- Always stay in character, using each character's described personality and stance.
-- The facilitator should gently steer toward the current workshop phase goal:
-  "${phase.goal}".
-- Keep each line short and natural, sized for a single comic speech bubble.
-- Do NOT generate dialogue for the player character ${
-      playerCharacterName
-        ? `named "${playerCharacterName}".`
-        : "(there is currently no player character in this scene)."
+    // If user typed as a participant (player input)
+    if (playerText) {
+      session.addDialogue({
+        speaker: "You",
+        text: playerText,
+        type: "player",
+      });
     }
-- Do NOT include narration or panel descriptions.
-- Only generate in-character dialogue plus a brief action note per line if relevant.
-- Output MUST be valid JSON with this exact shape:
 
-{
-  "turns": [
-    {
-      "speaker": "Name of character",
-      "utterance": "What they say, one speech bubble worth",
-      "emotion": "brief emotion label (e.g., calm, concerned, excited)",
-      "action": "optional short action description, or null"
+    // If user injected a facilitator line directly
+    if (facilitatorText) {
+      session.addDialogue({
+        speaker: session.getWorkshop().facilitator.name,
+        text: facilitatorText,
+        type: "facilitator",
+      });
     }
-  ]
-}
 
-- Provide between 1 and ${maxNewBubbles} new turns.
-`;
-
-    const userPrompt = `
-WORKSHOP PHASE:
-- ID: ${phase.id}
-- Title: ${phase.title}
-- Goal: ${phase.goal}
-
-CHARACTERS:
-${characterDescriptions || "(none provided)"}
-
-RECENT DIALOGUE:
-${transcript || "(no dialogue yet)"}
-
-Now continue the conversation with 1-${maxNewBubbles} short speech turns that naturally follow.
-`;
-
-    // 4. Call OpenAI
-    const completion = await client.chat.completions.create({
-      model: "gpt-4.1-mini", // or "gpt-4.1" if you want more oomph
-      response_format: { type: "json_object" },
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ],
+    // Build prompts and call LLM
+    const messages = buildMessages(session, { maxNewTurns });
+    const rawContent = await chatCompletion(messages, {
       temperature: 0.8,
-      max_tokens: 400,
+      maxTokens: 600,
+      json: true,
     });
 
-    const rawContent = completion.choices[0]?.message?.content;
-
-    // 5. Parse JSON
+    // Parse response
     let parsed;
     try {
       parsed = JSON.parse(rawContent);
     } catch (e) {
-      console.error("Model JSON parse error:", e, rawContent);
-      return res.status(502).json({
-        error: "Model returned invalid JSON.",
-        rawContent,
-      });
+      console.error("LLM JSON parse error:", e, rawContent);
+      return res.status(502).json({ error: "LLM returned invalid JSON.", rawContent });
     }
 
     let turns = Array.isArray(parsed.turns) ? parsed.turns : [];
 
-    // 6. Enforce “don’t speak as the player character”
-    if (playerCharacterName) {
-      turns = turns.filter((t) => t.speaker !== playerCharacterName);
-    }
-
-    // 7. Normalize and return
+    // Normalize turns
     const sanitized = turns.map((t) => ({
       speaker: String(t.speaker || "").trim(),
       utterance: String(t.utterance || "").trim(),
@@ -177,14 +108,104 @@ Now continue the conversation with 1-${maxNewBubbles} short speech turns that na
       action: t.action ? String(t.action).trim() : null,
     }));
 
-    res.json({ turns: sanitized });
+    // Add to session dialogue
+    for (const t of sanitized) {
+      const isFacilitator =
+        t.speaker === session.getWorkshop().facilitator.name;
+      session.addDialogue({
+        speaker: t.speaker,
+        text: t.utterance,
+        type: isFacilitator ? "facilitator" : "participant",
+        meta: [t.emotion, t.action].filter(Boolean).join(" · ") || null,
+      });
+    }
+
+    // Check if LLM signaled phase completion
+    let phaseAdvanced = false;
+    if (parsed.phaseComplete) {
+      const nextPhase = session.advancePhase();
+      if (nextPhase) phaseAdvanced = true;
+    }
+
+    res.json({
+      turns: sanitized,
+      currentPhase: session.getCurrentPhase(),
+      currentPhaseIndex: session.getCurrentPhaseIndex(),
+      currentActivityIndex: session.getState().currentActivityIndex,
+      currentActivity: session.getCurrentActivity(),
+      madlibFills: parsed.madlibFills || null,
+      phaseAdvanced,
+      dialogue: session.getDialogue(),
+    });
   } catch (err) {
     console.error("Error in /api/next-turn:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 });
 
+// Add a god-mode directive
+app.post("/api/directive", (req, res) => {
+  const { text } = req.body;
+  if (!text) return res.status(400).json({ error: "text required" });
+  session.addDirective(text);
+  res.json({ directives: session.getDirectives() });
+});
+
+// Remove a specific directive
+app.delete("/api/directive/:index", (req, res) => {
+  const index = parseInt(req.params.index, 10);
+  if (isNaN(index)) return res.status(400).json({ error: "invalid index" });
+  session.removeDirective(index);
+  res.json({ directives: session.getDirectives() });
+});
+
+// Clear all directives
+app.post("/api/clear-directives", (_req, res) => {
+  session.clearDirectives();
+  res.json({ directives: [] });
+});
+
+// Advance to next activity within current phase
+app.post("/api/advance-activity", (_req, res) => {
+  const activity = session.advanceActivity();
+  if (!activity) {
+    return res.json({
+      advanced: false,
+      message: "No more activities in this phase.",
+      currentActivityIndex: session.getState().currentActivityIndex,
+      currentActivity: null,
+      dialogue: session.getDialogue(),
+    });
+  }
+  res.json({
+    advanced: true,
+    currentActivity: activity,
+    currentActivityIndex: session.getState().currentActivityIndex,
+    dialogue: session.getDialogue(),
+  });
+});
+
+// Force phase advance
+app.post("/api/advance-phase", (_req, res) => {
+  const phase = session.advancePhase();
+  if (!phase) {
+    return res.json({
+      advanced: false,
+      message: "Already at the last phase.",
+      currentPhase: session.getCurrentPhase(),
+      currentPhaseIndex: session.getCurrentPhaseIndex(),
+      dialogue: session.getDialogue(),
+    });
+  }
+  res.json({
+    advanced: true,
+    currentPhase: phase,
+    currentPhaseIndex: session.getCurrentPhaseIndex(),
+    dialogue: session.getDialogue(),
+  });
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Workshop story engine listening on port ${PORT}`);
+  console.log(`Workshop simulator listening on port ${PORT}`);
 });

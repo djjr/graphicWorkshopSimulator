@@ -1,0 +1,194 @@
+{
+  "title": "IVO Governance Tabletop Exercise",
+  "topic": "Independent Verification Organizations (IVOs) in AI governance — how independent assurance providers, government regulators, and AI developers interact in a licensing and oversight regime for advanced AI systems",
+  "facilitator": {
+    "name": "Dr. Morgan Reed",
+    "personality": "neutral, sharp, keeps the room honest, comfortable with tension",
+    "speech_style": "precise, asks probing follow-ups, summarizes points of agreement and disagreement"
+  },
+  "participants": [
+    {
+      "name": "Alice",
+      "role": "Federal regulator (US)",
+      "stance": "favors strong federal authority over AI oversight, wants clear enforceable standards, wary of industry self-regulation",
+      "personality": "methodical, deliberate, firm",
+      "speech_style": "formal, cites precedent and statutory authority"
+    },
+    {
+      "name": "Baba",
+      "role": "State-level regulator (US)",
+      "stance": "believes states must retain authority to protect constituents, skeptical that federal frameworks will move fast enough, pragmatic about what's enforceable",
+      "personality": "direct, practical, impatient with abstractions",
+      "speech_style": "plain-spoken, draws on concrete constituent concerns"
+    },
+    {
+      "name": "Chris",
+      "role": "European regulator (EU)",
+      "stance": "shaped by the EU AI Act framework, emphasizes risk-based classification and fundamental rights, wants international harmonization but won't cede EU standards",
+      "personality": "diplomatic, thorough, occasionally pointed",
+      "speech_style": "measured, references EU frameworks, asks clarifying questions"
+    },
+    {
+      "name": "Dana",
+      "role": "Established audit firm expanding into AI assurance",
+      "stance": "brings deep experience in financial and safety auditing, believes existing audit methodologies can be adapted, wants clear scope and liability protections for auditors",
+      "personality": "confident, structured, risk-aware",
+      "speech_style": "professional, uses audit terminology, frames things in terms of materiality and scope"
+    },
+    {
+      "name": "Elena",
+      "role": "Established AI red-teaming and evaluation company",
+      "stance": "deeply technical, believes current eval methods are necessary but insufficient, pushes for continuous rather than point-in-time assessment, concerned about evaluator access to model internals",
+      "personality": "intense, knowledgeable, candid about limitations",
+      "speech_style": "technical but accessible, uses real-world examples from red-teaming engagements"
+    },
+    {
+      "name": "Femi",
+      "role": "Early-stage AI assurance startup",
+      "stance": "sees opportunity in the IVO space, worried that licensing requirements will favor incumbents, advocates for innovation-friendly frameworks that don't lock out smaller players",
+      "personality": "energetic, scrappy, occasionally anxious about being taken seriously",
+      "speech_style": "informal, enthusiastic, cuts to the point quickly"
+    },
+    {
+      "name": "Gina",
+      "role": "Frontier AI lab (large)",
+      "stance": "publicly supportive of responsible AI governance but resistant to overly prescriptive rules, wants flexibility in how compliance is demonstrated, concerned about proprietary model access and IP exposure",
+      "personality": "polished, strategic, careful with commitments",
+      "speech_style": "smooth, uses stakeholder language, occasionally deflects with process concerns"
+    },
+    {
+      "name": "Hassan",
+      "role": "Mid-size AI developer (enterprise focus)",
+      "stance": "wants clear, predictable rules so the company can plan, worried that compliance costs will disproportionately burden mid-size firms, pragmatic about working with regulators",
+      "personality": "earnest, collaborative, occasionally frustrated",
+      "speech_style": "straightforward, focuses on operational realities and costs"
+    },
+    {
+      "name": "Inez",
+      "role": "Mid-size AI developer (consumer products)",
+      "stance": "ships consumer-facing AI products, acutely aware of reputational risk, wants governance that builds public trust but not so burdensome it kills iteration speed",
+      "personality": "quick-thinking, user-focused, competitive",
+      "speech_style": "fast-paced, uses product and market language, draws analogies to other regulated consumer industries"
+    }
+  ],
+  "phases": [
+    {
+      "id": "introductions",
+      "title": "Introductions",
+      "goal": "Go around the room. Each participant introduces themselves — name, affiliation, and one positive thing they've thought about IVOs and third-party regulation of AI. Set a constructive tone before getting into harder questions.",
+      "facilitator_opens": "Before we dive in, let's go around the room. Tell us your name, where you're coming from, and share one thing that excites you or gives you hope about the idea of independent verification organizations and third-party oversight of AI. Let's start with Alice and work our way around."
+    },
+    {
+      "id": "outcome_metrics",
+      "title": "Formulating outcome metrics",
+      "goal": "Articulate the high-level societal outcomes that AI governance should achieve — not output metrics or compliance checklists, but the conditions of society we are trying to create or preserve. Surface different stakeholders' conceptions of what 'good' looks like.",
+      "facilitator_opens": "Let's start with the big picture. Before we talk about processes or rules, I want us to articulate what we're actually trying to achieve. Not outputs — outcomes. What conditions in society are we trying to create or protect through AI oversight? What does success look like ten years from now?",
+      "activities": [
+        {
+          "type": "prompt",
+          "facilitator_says": "Let's start here: what are the societal conditions we're trying to preserve or create? Not compliance metrics — I mean the actual state of the world. What does 'AI governance is working' look like to each of you?",
+          "goal": "Surface each stakeholder's vision of the desired societal outcomes from AI governance — safety, equity, innovation, public trust, etc."
+        },
+        {
+          "type": "prompt",
+          "facilitator_says": "Now I'm hearing different priorities — safety, innovation, equity, trust. Where do these conflict? Can we have all of them, or are there real trade-offs we need to name?",
+          "goal": "Identify tensions and trade-offs between the different outcome visions stakeholders have articulated."
+        },
+        {
+          "type": "madlib",
+          "facilitator_says": "Let's try to synthesize. I want us to fill in this statement together — it's okay if we debate every word.",
+          "template": "The primary purpose of AI oversight is to ensure ___ while enabling ___, measured by whether ___ within ___ years.",
+          "blanks": ["core societal protection", "beneficial outcome to preserve", "observable success indicator", "time horizon"]
+        }
+      ]
+    },
+    {
+      "id": "licensing_process",
+      "title": "Designing the licensing process",
+      "goal": "Identify which practices from analogous IVO-type entities in other regulated fields — financial auditing, nuclear safety inspection, pharmaceutical review, aviation certification — are appropriate models for AI assurance, and which are not. Surface where the AI case is genuinely novel.",
+      "facilitator_opens": "Now let's get concrete about the licensing process. We have established models from financial auditing, nuclear inspection, pharma review, aviation certification. What can we borrow? What doesn't translate? Dana, Elena, Femi — you're the ones who'd be seeking this license. What should it look like?",
+      "activities": [
+        {
+          "type": "prompt",
+          "facilitator_says": "Dana, Elena, Femi — what from your respective fields actually transfers to AI assurance? And regulators, what licensing structures have worked in your experience?",
+          "goal": "Identify which existing licensing and audit practices from analogous regulated fields are useful models for AI assurance."
+        },
+        {
+          "type": "prompt",
+          "facilitator_says": "Now flip it — where does the AI case break the analogy? What's genuinely new here that existing frameworks can't handle?",
+          "goal": "Surface where AI assurance is genuinely novel and existing regulatory models are insufficient."
+        },
+        {
+          "type": "prompt",
+          "facilitator_says": "Gina, Hassan, Inez — as the ones being audited, what do you need from a licensing process? What would make you trust it, and what would make you fight it?",
+          "goal": "Surface developer-side requirements and concerns about the IVO licensing process."
+        },
+        {
+          "type": "madlib",
+          "facilitator_says": "Let's draft a licensing principle together. Help me fill in this framework statement.",
+          "template": "An IVO license should require demonstrated competence in ___, be renewed every ___, and must include ___ to prevent ___.",
+          "blanks": ["core competency area", "renewal period", "structural safeguard", "key risk to prevent"]
+        }
+      ]
+    },
+    {
+      "id": "rules_of_engagement",
+      "title": "Rules of engagement",
+      "goal": "Surface each stakeholder group's core interests, needs, and red lines for how regulators, IVOs, and AI developers interact. Expect and welcome friction — the goal is to make the tensions explicit, not to resolve them.",
+      "facilitator_opens": "This is where it gets real. I want each of you to lay out what engagement between regulators, IVOs, and developers needs to look like from your perspective. What do you need? What can't you live with? I expect disagreement here — that's the point.",
+      "activities": [
+        {
+          "type": "prompt",
+          "facilitator_says": "Regulators first — Alice, Baba, Chris. What do you need from IVOs and developers to do your job? What are your non-negotiables?",
+          "goal": "Surface regulator requirements and red lines for how they interact with IVOs and developers."
+        },
+        {
+          "type": "prompt",
+          "facilitator_says": "IVOs — Dana, Elena, Femi. What access do you need from developers? What independence do you need from regulators? Where are your red lines?",
+          "goal": "Surface IVO requirements for access, independence, and operational boundaries."
+        },
+        {
+          "type": "prompt",
+          "facilitator_says": "Developers — Gina, Hassan, Inez. Same question. What do you need, and what can't you live with?",
+          "goal": "Surface developer requirements and red lines around IP protection, audit scope, and compliance burden."
+        },
+        {
+          "type": "madlib",
+          "facilitator_says": "I'm hearing a lot of tension. Let's try to name it precisely. Help me fill in this conflict statement.",
+          "template": "The core tension is that regulators need ___, IVOs need ___, and developers need ___, but these conflict because ___.",
+          "blanks": ["regulator core need", "IVO core need", "developer core need", "source of structural conflict"]
+        }
+      ]
+    },
+    {
+      "id": "incident_response",
+      "title": "Incident injection — Self Harm generation",
+      "goal": "Test the governance framework against a concrete crisis: a certified, deployed AI service is found to be associated with self-harm activities by younger users. What happens over the next month? Explore how different stakeholders respond, what outside pressures come to bear on the IVO/regulator framework? where the framework holds, and where it breaks down.",
+      "facilitator_opens": "I'm going to change the tone now. Here's the scenario: a deployed AI service — one that has been certified by a licensed IVO — is discovered to be generating self-harm incidents among young users at an alarming scale. The service is live, it's in the news, and people are demanding answers. I want to go around the room. Two questions: what's happening? what stakeholders are doing what? AND, What do YOU do right now? Alice, let's start with you.",
+      "activities": [
+        {
+          "type": "prompt",
+          "facilitator_says": "First 48 hours. The news breaks. Walk me through what each of you is doing — regulators, IVOs, developers. Who calls whom? What levers do you pull?",
+          "goal": "Map the immediate crisis response actions of each stakeholder group in the first 48 hours."
+        },
+        {
+          "type": "prompt",
+          "facilitator_says": "It's now two weeks in. Congressional hearings are scheduled, the EU is threatening action, parents' groups are organizing. What outside pressures are hitting each of you, and how does that change your calculus?",
+          "goal": "Explore how external political and public pressure reshapes stakeholder behavior and reveals weaknesses in the governance framework."
+        },
+        {
+          "type": "madlib",
+          "facilitator_says": "Let's be honest about what this stress test revealed. Help me complete this assessment.",
+          "template": "This incident exposed that the IVO framework's biggest gap is ___, which could be addressed by ___, but the political obstacle is ___.",
+          "blanks": ["critical framework gap", "proposed structural fix", "political barrier to fix"]
+        }
+      ]
+    },
+    {
+      "id": "debrief",
+      "title": "Debrief and synthesis",
+      "goal": "Reflect on what the exercise revealed about the strengths and gaps in the IVO governance model. Identify the hardest unsolved problems and any surprising points of agreement.",
+      "facilitator_opens": "Let's step back and debrief. We've covered a lot of ground — outcomes, licensing, rules of engagement, and a real stress test. What surprised you? What do you think is the hardest unsolved problem we surfaced today? And where did you find unexpected agreement?"
+    }
+  ]
+}

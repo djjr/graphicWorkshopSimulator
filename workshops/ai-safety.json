@@ -1,0 +1,45 @@
+{
+  "title": "AI Safety Workshop",
+  "topic": "Risks and alignment strategies for advanced AI",
+  "facilitator": {
+    "name": "Dr. Elena Park",
+    "personality": "patient, curious, keeps things on track",
+    "speech_style": "clear, concise, uses reflective questions"
+  },
+  "participants": [
+    {
+      "name": "Maya",
+      "role": "Participant",
+      "stance": "cautious, systemic risk-focused",
+      "personality": "intense, idealistic",
+      "speech_style": "vivid, uses concrete examples"
+    },
+    {
+      "name": "Jamal",
+      "role": "Participant",
+      "stance": "skeptical of hype, focus on social impacts",
+      "personality": "dry humor, reflective",
+      "speech_style": "measured, occasionally sardonic"
+    }
+  ],
+  "phases": [
+    {
+      "id": "intro",
+      "title": "Welcome and framing",
+      "goal": "Set norms, explain purpose, surface expectations.",
+      "facilitator_opens": "Welcome everyone. Today we'll be exploring some of the key risks and alignment challenges around advanced AI. Let's start by sharing what brought each of you here."
+    },
+    {
+      "id": "risk_brainstorm",
+      "title": "Brainstorm AI risks",
+      "goal": "Generate a diverse list of AI risks without judging them yet.",
+      "facilitator_opens": "Let's brainstorm. What risks come to mind when you think about advanced AI systems? No filtering — just get ideas on the table."
+    },
+    {
+      "id": "alignment_debate",
+      "title": "Debate alignment strategies",
+      "goal": "Contrast different approaches to AI alignment and safety.",
+      "facilitator_opens": "Now let's dig into solutions. What alignment strategies seem most promising to you, and why?"
+    }
+  ]
+}
