@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Graphic Novel Generator</title>
+  <link rel="stylesheet" href="css/novel.css">
+</head>
+<body>
+  <div id="loader">
+    <h1>Graphic Novel Generator</h1>
+    <p class="subtitle">Transform your workshop transcript into a visual narrative</p>
+
+    <div class="file-inputs">
+      <div class="file-group">
+        <label for="export-file">Workshop Export JSON</label>
+        <p class="hint">The dialogue export from the Workshop Simulator</p>
+        <input type="file" id="export-file" accept=".json">
+        <span class="file-status" id="export-status"></span>
+      </div>
+
+      <div class="file-group">
+        <label for="config-file">Workshop Config JSON</label>
+        <p class="hint">The original workshop configuration file</p>
+        <input type="file" id="config-file" accept=".json">
+        <span class="file-status" id="config-status"></span>
+      </div>
+    </div>
+
+    <div class="button-row">
+      <button id="generate-btn" disabled>Generate Graphic Novel</button>
+      <button id="sample-btn" class="btn-secondary">Reload Sample Data</button>
+    </div>
+    <p class="hint" style="margin-top:12px; text-align:center">Sample data loads automatically when served via HTTP. Pick your own files to override.</p>
+    <div id="error-display"></div>
+  </div>
+
+  <div id="novel-container"></div>
+
+  <div id="nav-hint" class="hidden">Use <kbd>&larr;</kbd> <kbd>&rarr;</kbd> arrow keys or scroll to navigate</div>
+
+  <script src="js/colors.js"></script>
+  <script src="js/parser.js"></script>
+  <script src="js/segmenter.js"></script>
+  <script src="js/classifier.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/backgrounds.js"></script>
+  <script src="js/silhouettes.js"></script>
+  <script src="js/bubbles.js"></script>
+  <script src="js/renderer.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
