@@ -190,17 +190,24 @@ body {
   z-index: 2;
 }
 
-/* === Panel Backgrounds (SVG) === */
+/* === Panel Backgrounds (images) === */
 .gn-panel-bg {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: 0;
   pointer-events: none;
 }
 
-.gn-panel-bg svg {
-  width: 100%;
-  height: 100%;
+.gn-panel-bg img {
+  display: block;
+}
+
+/* Semi-transparent overlay so silhouettes and bubbles read over busy images */
+.gn-panel-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(250, 250, 250, 0.5);
 }
 
 /* === Silhouettes === */
