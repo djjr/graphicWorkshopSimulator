@@ -132,6 +132,12 @@ body {
   min-height: 20px;
 }
 
+.version-info {
+  margin-top: 24px;
+  font-size: 11px;
+  color: #444;
+}
+
 /* === Novel Container === */
 #novel-container {
   max-width: 960px;
