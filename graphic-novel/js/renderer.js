@@ -123,42 +123,10 @@ GN.renderer = {
       el.appendChild(bgDiv);
     }
 
-    // Collect active speakers for this beat
-    var activeSpeakers = new Set();
-    var allSpeakers = new Set();
     var lines = panel.beat.lines;
-    for (var i = 0; i < lines.length; i++) {
-      activeSpeakers.add(lines[i].speaker);
-      allSpeakers.add(lines[i].speaker);
-    }
 
-    // Silhouettes
-    var silResult = GN.silhouettes.placeSilhouettes(
-      panel.sceneType, activeSpeakers, allSpeakers, registry, pw, ph
-    );
-
-    var silDiv = document.createElement('div');
-    silDiv.className = 'gn-silhouettes';
-    for (var j = 0; j < silResult.placements.length; j++) {
-      var sp = silResult.placements[j];
-      var sEl = document.createElement('div');
-      sEl.className = 'gn-silhouette' + (sp.facingLeft ? ' facing-left' : '');
-      // Convert px position to percentage of panel width for responsiveness
-      var leftPct = (sp.x / pw) * 100;
-      sEl.style.left = Math.max(0, Math.min(85, leftPct)) + '%';
-      sEl.style.bottom = '0';
-      sEl.innerHTML = sp.html;
-      silDiv.appendChild(sEl);
-    }
-
-    if (silResult.othersCount > 0) {
-      var badge = document.createElement('div');
-      badge.className = 'gn-others-badge';
-      badge.textContent = '+' + silResult.othersCount + ' others';
-      silDiv.appendChild(badge);
-    }
-
-    el.appendChild(silDiv);
+    // Empty silhouette result — bubbles will alternate left/right by index
+    var silResult = { placements: [], othersCount: 0 };
 
     // Speech bubbles
     var bubblesHtml = GN.bubbles.renderBubblesLayer(

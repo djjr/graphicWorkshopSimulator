@@ -283,8 +283,9 @@ body {
 }
 
 .gn-bubble-text {
-  font-size: 14px;
-  line-height: 1.35;
+  font-family: 'Schoolbell', cursive;
+  font-size: 12px; /* was 14 */
+  line-height: 1.15; /* was 1.35 */
   color: #222;
   word-wrap: break-word;
 }
